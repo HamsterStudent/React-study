@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useFormState } from "react-hook-form";
 
 // function ToDoList() {
 //   const [toDo, setToDo] = useState("");
@@ -30,15 +30,33 @@ import { useForm } from "react-hook-form";
 // }
 
 function ToDoList() {
-  const { register, watch } = useForm();
-  console.log(watch());
+  const { register, handleSubmit, formState } = useForm();
+  const onVaild = (data: any) => {
+    console.log(data);
+  };
+  console.log(formState.errors);
   return (
     <div>
-      <form>
-        <input {...register("toDo")} placeholder="Write a to do" />
-        <input {...register("hamster")} placeholder="Write a to do" />
-        <input {...register("pass")} placeholder="Write a to do" />
-        <input {...register("hams")} placeholder="Write a to do" />
+      <form onSubmit={handleSubmit(onVaild)}>
+        <input
+          {...register("toDo", { required: true })}
+          placeholder="Write a to do"
+        />
+        <input
+          {...register("hamster", { required: true })}
+          placeholder="Write a to do"
+        />
+        <input
+          {...register("pass", { required: true, minLength: 10 })}
+          placeholder="Write a to do"
+        />
+        <input
+          {...register("hams", {
+            required: "password is required",
+            minLength: { value: 5, message: "your pass too short" },
+          })}
+          placeholder="Write a to do"
+        />
         <button>Add</button>
       </form>
     </div>
