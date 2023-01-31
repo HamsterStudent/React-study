@@ -9,7 +9,7 @@ function ToDoList() {
   // const [toDos, setToDos] = useRecoilState(toDoState);
 
   const toDos = useRecoilValue(toDoState);
-
+  console.log(toDos);
   return (
     <div>
       <h1>To Do</h1>
