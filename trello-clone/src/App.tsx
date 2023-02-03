@@ -1,5 +1,13 @@
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import {
+  DragDropContext,
+  Draggable,
+  Droppable,
+  DropResult,
+} from "react-beautiful-dnd";
+import { useRecoilState, useRecoilValue } from "recoil";
 import styled from "styled-components";
+import { toDoState } from "./atoms";
+import DraggableCard from "./Components/DragebbleCard";
 
 const Wrapper = styled.div`
   display: flex;
@@ -25,36 +33,29 @@ const Board = styled.div`
   min-height: 200px;
 `;
 
-const Card = styled.div`
-  border-radius: 5px;
-  padding: 10px 10px;
-  background-color: ${(props) => props.theme.cardColor};
-  margin-bottom: 10px;
-`;
-
-const toDos = ["a", "b", "c", "d", "e", "f"];
-
 function App() {
-  const onDragEnd = () => {};
+  const [toDos, setToDos] = useRecoilState(toDoState);
+  const onDragEnd = ({ draggableId, destination, source }: DropResult) => {
+    if (!destination) return;
+
+    setToDos((oldToDos) => {
+      const toDosCopy = [...oldToDos];
+      // 1. Delect item on source.index
+      toDosCopy.splice(source.index, 1);
+      // 2. Put back the item on the destination.index
+      toDosCopy.splice(destination?.index, 0, draggableId);
+      return toDosCopy;
+    });
+  };
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Wrapper>
         <Boards>
-          <Droppable droppableId="one">
+          <Droppable droppableId="realone">
             {(hamster) => (
               <Board ref={hamster.innerRef} {...hamster.droppableProps}>
                 {toDos.map((toDo, index) => (
-                  <Draggable draggableId={toDo} index={index}>
-                    {(hamster) => (
-                      <Card
-                        ref={hamster.innerRef}
-                        {...hamster.dragHandleProps}
-                        {...hamster.draggableProps}
-                      >
-                        {toDo}
-                      </Card>
-                    )}
-                  </Draggable>
+                  <DraggableCard key={toDo} index={index} toDo={toDo} />
                 ))}
                 {hamster.placeholder}
               </Board>
