@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Link,
   Route,
@@ -9,6 +10,7 @@ import {
   useRouteMatch,
 } from "react-router-dom";
 import styled from "styled-components";
+import { fetchCoinInfo, fetchCoinTickers } from "../api";
 import Chart from "./Chart";
 import Price from "./Price";
 
@@ -156,48 +158,61 @@ interface IPriceData {
 }
 
 function Coin() {
-  const [loading, setLoading] = useState(true);
   const { coinId } = useParams<RouteParams>();
   // useLocation : Link to 로 보낸 데이터 받아오기
   const { state } = useLocation<RouteState>();
-  const [info, setInfo] = useState<IInfoData>();
-  const [priceInfo, setPriceInfo] = useState<IPriceData>();
   const priceMatch = useRouteMatch("/:coinId/price");
   const chartMatch = useRouteMatch("/:coinId/chart");
 
-  console.log(chartMatch);
+  // const [loading, setLoading] = useState(true);
+  // const [info, setInfo] = useState<IInfoData>();
+  // const [priceInfo, setPriceInfo] = useState<IPriceData>();
 
-  useEffect(() => {
-    // (async () => {
-    //   const response = await fetch(
-    //     `https://api.coinpaprika.com/v1/coins/${coinId}`,
-    //   );
-    //   const json = await response.json();
-    // })();
+  // useEffect(() => {
+  //   // (async () => {
+  //   //   const response = await fetch(
+  //   //     `https://api.coinpaprika.com/v1/coins/${coinId}`,
+  //   //   );
+  //   //   const json = await response.json();
+  //   // })();
 
-    // 위의 두줄짜리 코드를 한줄로 합침
-    (async () => {
-      const infoData = await (
-        await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
-      ).json();
-      console.log(infoData);
-      const priceData = await (
-        await fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`)
-      ).json();
-      console.log(priceData);
-      setInfo(infoData);
-      setPriceInfo(priceData);
-      setLoading(false);
-    })();
-    // hook은 최선의 성능을 위해 hook 안에서 사용한 것은 그게 어떤 것이든 이 안에 dependency를 넣어야 한다고 경고
-    // 넣든안넣든 노상관. 불변하는 속성을 넣어야한다!!
-  }, [coinId]);
+  //   // 위의 두줄짜리 코드를 한줄로 합침
+  //   (async () => {
+  //     const infoData = await (
+  //       await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
+  //     ).json();
+  //     console.log(infoData);
+  //     const priceData = await (
+  //       await fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`)
+  //     ).json();
+  //     console.log(priceData);
+  //     setInfo(infoData);
+  //     setPriceInfo(priceData);
+  //     setLoading(false);
+  //   })();
+  //   // hook은 최선의 성능을 위해 hook 안에서 사용한 것은 그게 어떤 것이든 이 안에 dependency를 넣어야 한다고 경고
+  //   // 넣든안넣든 노상관. 불변하는 속성을 넣어야한다!!
+  // }, [coinId]);
+
+  // fetchCoinInfo에서 coinId가 필요하므로 이렇게 실행
+  // 모든 쿼리는 각각의 고유한 id를 가지고 있어야 함
+  // isLoading을 쓰는 두 함수가 같은 이름을 가지면 안되기 때문에 infoLoading, tickersLoading으로 변경
+  // data도 마찬가지이다
+  const { isLoading: infoLoading, data: infoData } = useQuery<IInfoData>(
+    ["info", coinId],
+    () => fetchCoinInfo(coinId),
+  );
+  const { isLoading: tickersLoading, data: tickersData } = useQuery<IPriceData>(
+    ["tickers", coinId],
+    () => fetchCoinTickers(coinId),
+  );
+  const loading = infoLoading || tickersLoading;
   return (
     <Container>
       <Header>
         {/* coins에 진입하지 않고 페이지로 이동하면 state를 못받아오기 때문에 버그 발생. */}
         <Title>
-          {state?.name ? state.name : loading ? "Loading..." : info?.name}
+          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
         </Title>
       </Header>
       {loading ? (
@@ -207,26 +222,26 @@ function Coin() {
           <Overview>
             <OverviewItem>
               <span>Rank:</span>
-              <span>{info?.rank}</span>
+              <span>{infoData?.rank}</span>
             </OverviewItem>
             <OverviewItem>
               <span>Symbol:</span>
-              <span>${info?.symbol}</span>
+              <span>${infoData?.symbol}</span>
             </OverviewItem>
             <OverviewItem>
               <span>Open Source:</span>
-              <span>{info?.open_source ? "Yes" : "No"}</span>
+              <span>{infoData?.open_source ? "Yes" : "No"}</span>
             </OverviewItem>
           </Overview>
-          <Description>{info?.description}</Description>
+          <Description>{infoData?.description}</Description>
           <Overview>
             <OverviewItem>
               <span>Total Suply:</span>
-              <span>{priceInfo?.total_supply}</span>
+              <span>{tickersData?.total_supply}</span>
             </OverviewItem>
             <OverviewItem>
               <span>Max Supply:</span>
-              <span>{priceInfo?.max_supply}</span>
+              <span>{tickersData?.max_supply}</span>
             </OverviewItem>
           </Overview>
 
@@ -246,7 +261,7 @@ function Coin() {
               <Price />
             </Route>
             <Route path={`/${coinId}/chart`}>
-              <Chart />
+              <Chart coinId={coinId} />
             </Route>
           </Switch>
         </>
