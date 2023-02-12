@@ -1,6 +1,11 @@
 import { createGlobalStyle } from "styled-components";
 import Router from "./routes/Router";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ThemeProvider } from "styled-components";
+import { darkTheme, lightTheme } from "./theme";
+import { useState } from "react";
+import { useRecoilValue } from "recoil";
+import { isDarkAtom } from "./atoms";
 
 const GlobalStyle = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Lora:ital@0;1&display=swap');
@@ -68,11 +73,19 @@ a{
 `;
 
 function App() {
+  // state를 사용하기 위해 index에서 app으로 theme를 가져옴 : recoil을 쓰면 여기서 안해도 됨
+  // const [isDark, setIsDark] = useState(false);
+  // const toggleDark = () => setIsDark((current) => !current);
+
+  // recoil은 두단계 아래로 내려갈 때에 사용하는게 좋음
+  const isDark = useRecoilValue(isDarkAtom);
   return (
     <>
-      <GlobalStyle />
-      <Router />
-      <ReactQueryDevtools initialIsOpen={true} />
+      <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
+        <GlobalStyle />
+        <Router />
+        <ReactQueryDevtools initialIsOpen={true} />
+      </ThemeProvider>
     </>
   );
 }

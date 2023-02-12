@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { fetchCoins } from "../api";
+import { isDarkAtom } from "../atoms";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 const Container = styled.div`
   padding: 0px 20px;
@@ -20,19 +22,19 @@ const Header = styled.header`
 const CoinsList = styled.ul``;
 
 const Coin = styled.li`
-  background-color: #16453e;
+  background-color: ${(props) => props.theme.cardBgColor};
   color: ${(props) => props.theme.bgColor};
   margin-bottom: 10px;
   padding: 20px;
   border-radius: 15px;
   a {
-    transition: color 0.2s ease-in-out;
+    transition: 0.2s ease-in-out;
     display: flex;
     align-items: center;
   }
   :hover {
     a {
-      color: ${(props) => props.theme.accentColor};
+      color: ${(props) => props.theme.textColor};
     }
   }
 `;
@@ -83,11 +85,15 @@ function Coins() {
   // useQuerty : 1. fetchCoins를 불러옴 2. 로딩이 되었는지 안되었는지 알려줌 3. 데이터를 넣어줌
   // reactquery는 캐쉬를 저장하기 때문에 다른 페이지로 넘어갔다가 돌아와도 로딩이 안뜬다
   const { isLoading, data } = useQuery<ICoin[]>(["allCoins"], fetchCoins);
+  // atom을 변경해주는 역할
+  const setDarkAtom = useSetRecoilState(isDarkAtom);
+  const toggleDarkAtom = () => setDarkAtom((prev) => !prev);
 
   return (
     <Container>
       <Header>
         <Title>COINS</Title>
+        <button onClick={toggleDarkAtom}>Toggle</button>
       </Header>
       {isLoading ? (
         <Loader>Loading...</Loader>

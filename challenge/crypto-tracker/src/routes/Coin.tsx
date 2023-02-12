@@ -72,11 +72,11 @@ const Tab = styled.span<{ isActive: boolean }>`
   text-transform: uppercase;
   font-size: 12px;
   font-weight: 400;
-  background-color: rgba(255, 188, 100, 0.5);
+  background-color: ${(props) => props.theme.cardBgColor};
   padding: 7px 0px;
   border-radius: 10px;
   color: ${(props) =>
-    props.isActive ? props.theme.accentColor : props.theme.textColor};
+    props.isActive ? props.theme.bgColor : props.theme.textColor};
   a {
     display: block;
   }
