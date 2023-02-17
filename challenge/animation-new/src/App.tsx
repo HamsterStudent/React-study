@@ -1,5 +1,11 @@
 import styled from "styled-components";
-import { motion } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useMotionValueEvent,
+  useTransform,
+} from "framer-motion";
+import { useEffect, useRef } from "react";
 
 const Wrapper = styled.div`
   height: 100vh;
@@ -7,6 +13,17 @@ const Wrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+`;
+
+const BiggerBox = styled.div`
+  width: 600px;
+  height: 600px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* overflow: hidden; */
 `;
 
 // styled component와 같이 쓰려면 이렇게 써야 함
@@ -83,30 +100,54 @@ const boxVariants = {
 };
 
 function App() {
+  // ref .. 조각을 연결해준다는데
+  // const biggerBoxRef = useRef<HTMLDivElement>(null);
+
+  // value는 값을 가져다가 다른 숫자로 변경하는 걸 가능하게 해준다
+  const x = useMotionValue(0);
+  // x가 -800일때 2를 반환, 0일때 1 반환, 800일때 0 반환
+  const rotateZ = useTransform(x, [-800, 800], [-360, 360]);
+  useMotionValueEvent(rotateZ, "change", (l) => {
+    console.log(l);
+  });
   return (
+    // {/* <Wrapper>
+    //   <Box variants={boxVariants} initial="start" animate="end">
+    //     부모 애니메이션이 자식에게도 계승됨 자식 컴포넌트의 initial이름과
+    //     animate이름을 부모와 같게 하면 안적어도됨
+    //     <Circle variants={circleVariants} />
+    //     <Circle variants={circleVariants} />
+    //     <Circle variants={circleVariants} />
+    //     <Circle variants={circleVariants} />
+    //   </Box>
+    // </Wrapper> */}
+
+    // {/* initial은 애니메이션 시작점에 넣을 설정 이름을 */}
+    // {/* animation은 움직일 동작에 넣을 설정 이름을 기재 */}
+    // {/* <Box variants={myVars} initial="start" animate="end" /> */}
+
+    // {/* <Wrapper>
+    //   <BiggerBox ref={biggerBoxRef}>
+    //     <Box
+    //       //drag라고 쓰기만 하면 되는거냐....
+    //       //rgb로 써야 자연스럽게 변한
+    //       drag
+    //       // 드래그한 항목이 원위치로 가게 만듬
+    //       dragSnapToOrigin
+    //       dragConstraints={biggerBoxRef}
+    //       // 마우스 커서와 물체가 작용하는 힘에 대한 함수..
+    //       // 0은 힘이 없어서 박스 안에 걸림, 1은 힘이 좋아서 박스 밖까지 그냥 가져감
+    //       dragElastic={0}
+    //       variants={boxVariants}
+    //       whileHover="hover"
+    //       whileDrag="drag"
+    //       whileTap="click"
+    //     />
+    //   </BiggerBox>
+    // </Wrapper> */}
+
     <Wrapper>
-      {/* initial은 애니메이션 시작점에 넣을 설정 이름을 */}
-      {/* animation은 움직일 동작에 넣을 설정 이름을 기재 */}
-      {/* <Box variants={myVars} initial="start" animate="end" /> */}
-
-      {/* 부모 애니메이션이 자식에게도 계승됨 */}
-      {/* <Box variants={boxVariants} initial="start" animate="end">
-        자식 컴포넌트의 initial이름과 animate이름을 부모와 같게 하면 안적어도됨
-        <Circle variants={circleVariants} />
-        <Circle variants={circleVariants} />
-        <Circle variants={circleVariants} />
-        <Circle variants={circleVariants} />
-      </Box> */}
-
-      {/* drag라고 쓰기만 하면 되는거냐.... */}
-      {/* rgb로 써야 자연스럽게 변한  */}
-      <Box
-        drag
-        variants={boxVariants}
-        whileHover="hover"
-        whileDrag="drag"
-        whileTap="click"
-      />
+      <Box style={{ x, rotateZ }} drag="x" dragSnapToOrigin />
     </Wrapper>
   );
 }
