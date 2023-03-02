@@ -44,6 +44,18 @@ const Slider = styled.div`
   top: -100px;
 `;
 
+const Prev = styled.div`
+  width: 30px;
+  height: 30px;
+  background-color: pink;
+`;
+
+const Next = styled.div`
+  width: 30px;
+  height: 30px;
+  background-color: aqua;
+`;
+
 const Row = styled(motion.div)`
   display: grid;
   gap: 5px;
@@ -132,6 +144,18 @@ const rowVariants = {
   },
 };
 
+const rowVar = {
+  hidden: (direction: boolean) => ({
+    x: direction ? -window.innerWidth - 10 : window.innerWidth + 10,
+  }),
+  visible: {
+    x: 0,
+  },
+  exit: (direction: boolean) => ({
+    x: direction ? window.innerWidth - 10 : -window.innerWidth + 10,
+  }),
+};
+
 const BoxVariants = {
   nomal: {
     scale: 1,
@@ -170,15 +194,28 @@ function Home() {
   );
   const [index, setIndex] = useState(0);
   const [leaving, setLeaveing] = useState(false);
+  const [direction, setDirection] = useState(false);
   const increaseIndex = () => {
     if (data) {
       if (leaving) return;
       toggleLeaving();
+      setDirection(false);
       const totalMovies = data?.results.length - 1;
       const maxIndex = Math.floor(totalMovies / offset) - 1;
       setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
     }
   };
+  const decreaseIndex = () => {
+    if (data) {
+      if (leaving) return;
+      toggleLeaving();
+      setDirection(true);
+      const totalMovies = data?.results.length - 1;
+      const maxIndex = Math.floor(totalMovies / offset) - 1;
+      setIndex((prev) => (prev === 0 ? maxIndex : prev - 1));
+    }
+  };
+
   const toggleLeaving = () => setLeaveing((prev) => !prev);
   const onBoxClicked = (movieId: number) => {
     history.push(`/movies/${movieId}`);
@@ -195,17 +232,21 @@ function Home() {
         <Loader>Loading...</Loader>
       ) : (
         <>
-          <Banner
-            onClick={increaseIndex}
-            bgphoto={makeImagePath(data?.results[0].backdrop_path || "")}
-          >
+          <Banner bgphoto={makeImagePath(data?.results[0].backdrop_path || "")}>
             <Title>{data?.results[0].title}</Title>
             <Overview>{data?.results[0].overview}</Overview>
           </Banner>
           <Slider>
-            <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
+            <Prev onClick={decreaseIndex}>{"<"}</Prev>
+            <Next onClick={increaseIndex}>{">"}</Next>
+            <AnimatePresence
+              custom={direction}
+              initial={false}
+              onExitComplete={toggleLeaving}
+            >
               <Row
-                variants={rowVariants}
+                variants={rowVar}
+                custom={direction}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
